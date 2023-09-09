@@ -1,11 +1,13 @@
 import classes from "./PaymentRecords.module.css";
 import { useQuery } from 'react-query'; // react-query import 추가
 import PaymentRecordList from "./PaymentRecordList";
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import UserContext from "../../../../contexts/UserContext";
 
-
-async function fetchRecords() {
+async function fetchRecords(id) {
   const response = await fetch(
-    "https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/getpaymentreceiptdata/getallpaymentreceiptdatabyuserid?user_id=seller1002"
+    `https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/getpaymentreceiptdata/getallpaymentreceiptdatabyuserid?user_id=${id}`
   );
   const data = await response.json();
 
@@ -13,8 +15,17 @@ async function fetchRecords() {
 }
 
 const PaymentRecords = () => {
+  const signIn = useContext(UserContext);
+
+  let navigate = useNavigate();
+  useEffect(() => {
+    if (!signIn.isLogin) {
+      navigate('/');
+    }
+  }, [signIn.isLogin, navigate]);
+
   const { data: records, isLoading, isError, error, refetch } = useQuery(
-    'paymentRecords', () => fetchRecords(), {
+    'paymentRecords', () => fetchRecords(signIn.id), {
     staleTime: 2000,
   }
   );

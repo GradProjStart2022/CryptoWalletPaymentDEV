@@ -1,5 +1,11 @@
 import classes from "./BlockchainManage.module.css";
-import { useQuery } from "react-query";
+import { useQuery, useMutation } from "react-query";
+import { useContext, useEffect } from 'react';
+import UserContext from "../../../../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
+
+
+
 const fetchBlockchainList = async () => {
   const response = await fetch('https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/brofucntions/sangyunbro/BlockchainOne/readMainBlockchainList');
   if (!response.ok) {
@@ -8,8 +14,9 @@ const fetchBlockchainList = async () => {
   return response.json();
 };
 
-const fetchSellerChosenList = async () => {
-  const response = await fetch('https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/brofucntions/sangyunbro/BlockchainTwo/readSellersChosenMainBlockchain?seller_id=seller1001');
+const fetchSellerChosenList = async (id) => {
+  // console.log(id);
+  const response = await fetch(`https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/brofucntions/sangyunbro/BlockchainTwo/readSellersChosenMainBlockchain?seller_id=${id}`);
   if (!response.ok) {
     throw new Error('API 호출이 실패했습니다.');
   }
@@ -18,6 +25,15 @@ const fetchSellerChosenList = async () => {
 
 
 const BlockchainManage = () => {
+  const signIn = useContext(UserContext);
+  let navigate = useNavigate();
+
+  useEffect(() => {
+    if (!signIn.isLogin) {
+      navigate('/');
+    }
+  }, [signIn.isLogin, navigate]);
+
   const { data: firstData, isLoading: isLoadingFirst } = useQuery(
     "firstData",
     fetchBlockchainList
@@ -25,11 +41,10 @@ const BlockchainManage = () => {
 
   const { data: secondData, isLoading: isLoadingSecond } = useQuery(
     "secondData",
-    fetchSellerChosenList
+    () => fetchSellerChosenList(signIn.id), // argument는 원하는 인수
   );
 
   const sellerChosen = secondData?.data || [];
-
 
   return (
     <div className={classes.blockchainmanage_wrap}>
@@ -49,14 +64,20 @@ const BlockchainManage = () => {
                     key={key}
                     className={sellerChosen.includes(key) ? classes.unhighlighted_row : classes.highlighted_row}
                   >
-                    {value}
+                    <td className={classes.td}>
+                      {value}
+                    </td>
+                    {/* {console.log(typeof +key)} */}
+                    <td className={classes.td}>
+
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
         </div>
-        <button className={classes.edit_button}>수정</button>
+        {/* <button className={classes.edit_button}>수정</button> */}
       </div>
     </div>
   );

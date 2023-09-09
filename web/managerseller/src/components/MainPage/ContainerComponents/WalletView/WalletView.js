@@ -1,14 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { useQuery } from 'react-query';
 import classes from './WalletView.module.css';
 import Wallet from './Wallet';
-
+import UserContext from '../../../../contexts/UserContext';
+import { useNavigate } from 'react-router-dom';
 
 const walletArr = ["MetaMask", "TrustWallet", "Bitpay", "Argent", "Rainbow", "taehwanWallet"];
 
-async function getWalletData() {
+async function getWalletData(id) {
   const response = await fetch(
-    "https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/brofucntions/sangyunbro/WalletTwo/chosenwallet?seller_id=seller1001"
+    `https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/brofucntions/sangyunbro/WalletTwo/chosenwallet?seller_id=${id}`
   );
   const data = await response.json();
 
@@ -16,15 +17,24 @@ async function getWalletData() {
 }
 
 const WalletView = (props) => {
+  const signIn = useContext(UserContext);
+  let navigate = useNavigate();
+
+  useEffect(() => {
+    if (!signIn.isLogin) {
+      navigate('/');
+    }
+  }, [signIn.isLogin, navigate]);
+
   const { data: walletData, isLoading, isError, error } = useQuery(
-    'sellerWallet', () => getWalletData(), {
-    staleTime: 300000,
+    'sellerWallet', () => getWalletData(signIn.id), {
+    staleTime: 2000,
   }
   );
 
 
   useEffect(() => {
-    console.log(walletData);
+    // console.log(walletData);
   }, [walletData]); // 빈 배열을 전달하여 컴포넌트가 마운트될 때 한 번만 실행
 
 
@@ -32,14 +42,14 @@ const WalletView = (props) => {
 
   if (isLoading) {
     content = <p>Loading...</p>;
-  } else if (isError)
+  } else if (isError) {
     return (
       <>
         <h3>Oops, something went wrong</h3>
         <p>{error.toString()}</p>
       </>
     );
-  else if (walletData !== {}) {
+  } else if (walletData[1] !== undefined) {
     content =
       <div>
         {Object.entries(walletData).map(([key, value], index) => (

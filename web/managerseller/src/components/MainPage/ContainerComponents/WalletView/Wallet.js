@@ -9,7 +9,7 @@ const Wallet = (props) => {
             className={classes.component_component_no2_button}
             onClick={() => props.showModal('name', 'imgUrl')}
           >
-            등록
+            삭제
           </button>
         </div>
       </div>

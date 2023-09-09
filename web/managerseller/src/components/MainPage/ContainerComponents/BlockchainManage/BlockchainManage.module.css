@@ -35,15 +35,15 @@
 }
 
 .blockchain_list {
-  width: 15%;
+  width: 20%;
   border-collapse: collapse;
 }
 
 
 .blockchain_list th,
 .blockchain_list td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  /* border: 1px solid #ddd; */
+  /* padding: 10px; */
 }
 
 .blockchain_list tr {

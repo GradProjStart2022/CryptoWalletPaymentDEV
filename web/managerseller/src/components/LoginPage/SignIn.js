@@ -1,55 +1,68 @@
 import React from "react";
 import classes from "./SignIn.module.css";
-import { useState, useContext } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { useState, useContext, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import UserContext from "../../contexts/UserContext";
+
 const SignIn = (props) => {
   const [signInInvalid, setSignInInvalid] = useState(false);
   const [loading, setLoading] = useState(false);
   const signIn = useContext(UserContext);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  let navigate = useNavigate();
+  useEffect(() => {
+    if (isFormSubmitted && signIn.id !== "") {
+      const apiUrl = `https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/brofucntions/sangyunbro/GetSellerData/getsellerdata?seller_id=${signIn.id}`;
+      async function fetchData() {
+        try {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            alert(`아이디가 없습니다.`);
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log(`data`, data.data);
+          if (data.data.password === signIn.password) {
+            signIn.isLogin = true;
+            signIn.consumer_or_not = data.data.consumer_or_not;
+            signIn.email = data.data.email;
+            signIn.phone_number = data.data.phone_number;
+            signIn.real_name = data.data.real_name;
+            signIn.resident_registration_number = data.data.resident_registration_number;
+            alert('로그인 되었습니다.');
+            navigate('/main');
+          } else {
+            alert('비밀번호가 틀렸습니다.');
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }
+
+      fetchData();
+    }
+  }, [isFormSubmitted]);
+
 
   const handleUsernameChange = (event) => {
     signIn.id = event.target.value;
-    // setSignInId(event.target.value);
+    setIsFormSubmitted(false);
   };
 
   const handlePasswordChange = (event) => {
     signIn.password = event.target.value;
+    setIsFormSubmitted(false);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault(); // 폼 제출 기본 동작 방지
-    setLoading(true);
-    try {
-      const res = await axios({
-        method: "POST",
-        url: "https://asia-northeast3-nangnang-b59c0.cloudfunctions.net/api/login/loginreturndata",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: {
-          input_user_id: "gen1001",
-          input_user_pwd: "gen1001",
-        },
-      });
-      console.log(JSON.stringify(res, null, 2));
-      if (Object.keys(res).length === 0) {
-        // 빈 객체인 경우에 대한 처리
-        throw new Error("Empty response data.");
-      }
-    } catch (error) {
-      console.log(error);
-      alert("Login failed");
-      setSignInInvalid(true);
-    } finally {
-      setLoading(false);
-    }
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 기본 폼 제출 동작을 막음
+    setIsFormSubmitted(true); // 폼이 제출되었음을 표시
   };
 
   return (
     <div className={classes.login_component}>
-      {console.log(signIn)}
+      {console.log(`signIn`, signIn)}
       <div className={classes.wrap}>
         <h1>Seller Manager</h1>
         <h1>SignIn</h1>
